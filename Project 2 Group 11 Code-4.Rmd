@@ -1,0 +1,551 @@
+---
+title: "Project 2 Report"
+subtitle: "Group 11: Lindley Slipetz, Patrick Dunnington, Grace Zhang, and Stephen Kullman"
+output: pdf_document
+date: "2023-07-14"
+---
+
+```{r pressure, echo=FALSE, out.width = '100%'}
+knitr::include_graphics("/Users/patrickdunnington/Downloads/map.png")
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning =FALSE, message =FALSE)
+knitr::opts_knit$set(root.dir = "/Users/patrickdunnington")
+```
+\begin{center}
+Text
+\end{center}
+
+```{r, include=FALSE}
+library(tidyverse)
+library(sf)
+library(mapview)
+library(tidyverse) 
+library(gridExtra)
+library(faraway)
+library(RColorBrewer)
+housing <- read.csv("/Users/patrickdunnington/Downloads/DSSummerClass/STAT6021/data/kc_house_data.csv", header = TRUE)
+# housing<-housing %>%
+#   mutate(highQuality=cut(grade, breaks = c(-Inf, 6.9999, Inf),
+#                     	labels = c("0","1")))
+# housing$waterfront<-factor(housing$waterfront)
+# levels(housing$waterfront) <- c("Yes", "No")
+# sub <- c('price', 'bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors', 'waterfront', 'view', 'condition', 'sqft_above', 'sqft_basement', 'yr_built', 'yr_renovated', 'sqft_living15', 'sqft_lot15', 'highQuality')
+# housing <- housing[,sub]
+# set.seed(6021) ##for reproducibility to get the same split
+# sample<-sample.int(nrow(housing), floor(.50*nrow(housing)), replace = F)
+# train<-housing[sample, ] ##training data frame
+# test<-housing[-sample, ]
+```
+
+
+# 4. Linear Regression Visualizations
+
+```{r, echo=F}
+#First consider the affect of the observations provided on price
+plot1<-ggplot(housing, aes(x=sqft_living,y=price,color=view))+
+geom_point(alpha=0.5)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="House Square Footage", y="Price", title="(4) View with Size v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot2<-ggplot(housing, aes(x=sqft_living,y=price,color=yr_built))+
+geom_point(alpha=0.5,size=2)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="House Square Footage", y="Price", title="(5) Build Year with Size v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot3<-ggplot(housing, aes(x=sqft_living,y=price,color=condition))+
+geom_point(alpha=0.5,size=2)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="House Square Footage", y="Price", title="(6) Condition with Size v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot4<-ggplot(housing, aes(x=sqft_living,y=price,color=grade))+
+geom_point(alpha=0.5,size=2)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="House Square Footage", y="Price", title="(7) Grade with Size v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.2))
+
+grid.arrange(plot1,plot2,plot3,plot4, ncol = 2)
+```
+
+
+```{r}
+
+plot1<-ggplot(housing, aes(x=bedrooms,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Number of Bedrooms ", y="Price", title="(8) Bedroom Number v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot2<-ggplot(housing, aes(x=bathrooms,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Number of Bathrooms", y="Price", title="(9) Bathroom Number v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot3<-ggplot(housing, aes(x=sqft_living,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Square Footage of Living Space", y="Price", title="(10) Living Space Size v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.05))
+
+plot4<-ggplot(housing, aes(x=sqft_lot,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Square Footage of Lot", y="Price", title="(11) Lot Square Footage v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+grid.arrange(plot1,plot2,plot3,plot4, ncol = 2)
+```
+
+
+```{r}
+plot5<-ggplot(housing, aes(x=floors,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Number of Floors", y="Price", title="(12) Floor Number v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot6<-ggplot(housing, aes(x=sqft_above,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Square Footage of Upper Floors", y="Price", title="(13) Upper Floor Size v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.05))
+
+plot7<-ggplot(housing, aes(x=sqft_basement,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Basement Square Footage", y="Price", title="(14) Basement Size v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot8<-ggplot(housing, aes(x=sqft_living15,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Square Footage of Closest 15 Houses", y="Price", title="(15) Nearby House Size v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+grid.arrange(plot5,plot6,plot7,plot8, ncol=2)
+```
+
+```{r}
+plot9<-ggplot(housing, aes(x=sqft_lot15,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Square Footage of Closest 15 Lots", y="Price", title="(16) Nearest Lot Size v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot10<-ggplot(housing, aes(x=view,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="House View Rated on a Scale", y="Price", title="(17) House View v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot11<-ggplot(housing, aes(x=condition,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="House Condition Rate on a Scale", y="Price", title="(18) House Condition v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+plot12<-ggplot(housing, aes(x=grade,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Grade of Construction Quality", y="Price", title="(19) Build Quality v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.1))
+
+grid.arrange(plot9,plot10,plot11,plot12, ncol=2)
+```
+
+
+```{r}
+plot13<-ggplot(housing, aes(x=floors,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Number of Floors", y="Price", title="(20) Floor Number v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.2))
+
+plot14<-ggplot(housing, aes(x=yr_built,y=price))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Year House was Built", y="Price", title="(21) House Build Year v. Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.2))
+
+grid.arrange(plot13,plot14, ncol=2)
+```
+
+
+```{r}
+#Residual plots of the six varibles which may match the linear regression assumptions
+result1<-lm(price~sqft_living15,data=housing)
+#par(mfrow = c(2,2))
+#plot(result1,main="Nearest 15 Houses' Size vs. Price")
+```
+
+
+```{r}
+result2<-lm(price~sqft_living,data=housing)
+par(mfrow = c(2,2))
+plot(result2,main="(22) House Size vs. Price")
+```
+
+
+```{r}
+result3<-lm(price~sqft_above,data=housing)
+#par(mfrow = c(2,2))
+#plot(result3,main="Upper Floor Size vs. Price")
+```
+
+```{r}
+result4<-lm(price~bathrooms,data=housing)
+#par(mfrow = c(2,2))
+#plot(result4,main="Bathroom Number vs. Price")
+```
+
+```{r}
+result5<-lm(price~view,data=housing)
+par(mfrow = c(2,2))
+plot(result5,main="(23) House View vs. Price")
+```
+
+
+```{r}
+result6<-lm(price~grade,data=housing)
+#par(mfrow = c(2,2))
+#plot(result6,main="House Grade vs. Price")
+```
+
+```{r}
+#plot1<-MASS::boxcox(result1,lambda = seq(-0.5, 0.5, 1/10))
+```
+
+```{r}
+#plot2<-MASS::boxcox(result2,lambda = seq(-0.5, 0.5, 1/10))
+```
+
+```{r}
+#plot3<-MASS::boxcox(result3,lambda = seq(-0.5, 0.5, 1/10))
+```
+
+```{r}
+plot4<-MASS::boxcox(result4,lambda = seq(-0.5, 0.5, 1/10))
+```
+
+```{r}
+#plot5<-MASS::boxcox(result5,lambda = seq(-0.5, 0.5, 1/10))
+```
+
+```{r}
+#plot6<-MASS::boxcox(result6,lambda = seq(-0.5, 0.5, 1/10))
+```
+
+
+```{r}
+logprice<-log(housing$price)
+housing<-data.frame(housing,logprice)
+resultlog1<-lm(logprice~sqft_living15, data=housing)
+#par(mfrow=c(2,2))
+#plot(resultlog1,main="Nearest 15 Houses' Size vs. Ln(Price)")
+```
+
+```{r}
+resultlog2<-lm(logprice~sqft_living, data=housing)
+par(mfrow=c(2,2))
+plot(resultlog2,main="(24) House Size v. Ln(Price)")
+```
+
+```{r}
+resultlog3<-lm(logprice~sqft_above, data=housing)
+#par(mfrow=c(2,2))
+#plot(resultlog3,main="Upper Floor Size vs. Ln(Price)")
+```
+
+```{r}
+resultlog4<-lm(logprice~bathrooms, data=housing)
+#par(mfrow=c(2,2))
+#plot(resultlog4,main="Bathroom Number vs. Ln(Price)")
+```
+
+```{r}
+resultlog5<-lm(logprice~view, data=housing)
+#par(mfrow=c(2,2))
+#plot(resultlog5,main="House View vs. Ln(Price)")
+```
+
+```{r}
+resultlog6<-lm(logprice~grade, data=housing)
+par(mfrow=c(2,2))
+plot(resultlog6,main="(25) House Grade v. Ln(Price)")
+```
+
+
+```{r}
+finalresult<-lm(logprice~sqft_living15+sqft_living+sqft_above+bathrooms+view+grade,data=housing)
+summary(finalresult)
+round(faraway::vif(finalresult),3)
+#cov(finalresult)
+#low p-values but should be multicollinearity so use VIF / VIC 
+
+```
+
+```{r}
+set.seed(6021)
+sample<-sample.int(nrow(housing), floor(.50*nrow(housing)),replace=F)
+train<-housing[sample, ]
+test<-housing[-sample, ]
+
+testresult<-lm(logprice~sqft_living15+sqft_living+sqft_above+bathrooms+view+grade,data=test)
+summary(testresult)
+round(faraway::vif(testresult),3)
+```
+
+
+
+```{r}
+finaltestresult<-lm(logprice~sqft_living15+view+sqft_above+grade,data=test)
+summary(finaltestresult)
+round(faraway::vif(finaltestresult),3)
+```
+
+
+```{r}
+finaltestresult<-lm(logprice~sqft_living15+view+sqft_living+grade,data=test)
+summary(finaltestresult)
+round(faraway::vif(finaltestresult),3)
+#anova(finaltestresult)
+```
+
+
+```{r}
+#housingnull<-lm(logprice~1,data=test)
+#housingfull<-lm(logprice~.,data=test)
+#step(housingnull, scope=list(lower=housingnull, upper=housingfull), direction="forward")
+```
+```{r}
+#housingnull2<-lm(logprice~1,data=test)
+#housingfull2<-lm(logprice~.,data=test)
+#step(housingfull2, scope=list(lower=housingnull2, upper=housingfull2), direction="backward")
+```
+
+
+
+```{r}
+##externally studentized residuals
+ext.student<-rstudent(finaltestresult) 
+head(sort(abs(ext.student),decreasing=TRUE),n=5)
+
+#critical leverage
+2*(4)/10807
+
+##leverages
+hii<-lm.influence(finaltestresult)$hat 
+n<-nrow(finaltestresult)
+p<-3
+hii[hii>2*p/n]
+head(sort(hii, decreasing=TRUE), n=5)
+
+```
+
+```{r}
+#cooks distance
+COOKS<-cooks.distance(finaltestresult)
+head(sort(abs(COOKS),decreasing=TRUE),n=5)
+
+```
+
+
+```{r}
+#Run mean prediction
+#set.seed(330)
+# Extract a random row without replacement
+#newdata <- test %>% sample_n(1, replace = FALSE)
+#exp(newdata[,c(22)])
+```
+
+```{r}
+yhat= predict(finaltestresult,newdata = test)
+test<-data.frame(test,yhat)
+ggplot(test, aes(x=logprice,y=yhat))+
+geom_point(alpha=0.1)+
+geom_smooth(method = "lm", se=FALSE)+
+labs(x="Natural Log of House Price", y="Natural Log of Predicted Price", title="(26) Predicted Price v. Actual Price")+
+theme(axis.text.x = element_text(angle = 90), plot.title = element_text(hjust = 0.5))
+
+
+```
+
+# 6. Logistic Regression Visualizations
+
+```{r}
+housing<-housing %>%
+  mutate(highQuality=cut(grade, breaks = c(-Inf, 6.9999, Inf),
+                    	labels = c("0","1")))
+housing$waterfront<-factor(housing$waterfront)
+levels(housing$waterfront) <- c("Yes", "No")
+sub <- c('price', 'bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors', 'waterfront', 'view', 'condition', 'sqft_above', 'sqft_basement', 'yr_built', 'yr_renovated', 'sqft_living15', 'sqft_lot15', 'highQuality')
+housing <- housing[,sub]
+set.seed(6021) ##for reproducibility to get the same split
+sample<-sample.int(nrow(housing), floor(.50*nrow(housing)), replace = F)
+train<-housing[sample, ] ##training data frame
+test<-housing[-sample, ]
+```
+
+```{r}
+ggplot2::ggplot(train,aes(x=bathrooms, color=highQuality))+
+geom_density()+
+labs(title="(1) Density Plot of Number of Bathrooms by Quality", x = "Number of Bathrooms", y = "Density")
+``` 
+
+
+
+```{r}
+train <- train %>%
+  mutate(newness = case_when(
+    yr_renovated == 0 ~ yr_built,
+    yr_renovated != 0 ~ yr_renovated
+  ))
+library(ggplot2)
+ggplot2::ggplot(train,aes(x=newness, color=highQuality))+
+geom_density()+
+labs(title="(2) Density Plot of Newness by Quality", x = "When was the house last updated?", y = "Density")
+  
+```
+
+
+```{r}
+train <- train %>%
+  mutate(diff = sqft_living - sqft_living15)
+ggplot2::ggplot(train,aes(x=diff, color=highQuality))+
+geom_density()+
+labs(title="(3) Density Plot of Difference in Home Size by Quality", x = "Difference between House and Neighbor's Houses", y = "Density")
+ 
+```
+
+
+
+```{r, warning= FALSE}
+ggplot(train, aes(x=waterfront, fill=highQuality))+
+geom_bar(position = "fill")+
+labs(x="Waterfront", y="Proportion",
+title="(27) Proportion of Quality by Waterfront")
+```
+
+## 7. Logistic Regression Description
+
+```{r, warning = FALSE}
+regnull <- glm(factor(highQuality)~1, data=train, family="binomial")
+regfull <- glm(factor(highQuality)~., data=train, family="binomial")
+```
+
+
+```{r, warning = FALSE, include=FALSE}
+step(regfull, scope=list(lower=regnull, upper=regfull), direction="backward")
+```
+
+```{r, warning = FALSE, include=FALSE}
+step(regnull, scope=list(lower=regnull, upper=regfull), direction="forward")
+```
+
+### Fit model
+
+```{r, warning = FALSE}
+reg <- glm(formula = factor(highQuality) ~ sqft_living + yr_built + 
+    price + sqft_lot15 + sqft_living15 + sqft_above + bathrooms + 
+    waterfront + sqft_lot + yr_renovated, family = "binomial", 
+    data = train)
+summary(reg)
+```
+\newpage 
+
+### Is our model useful?
+
+
+```{r}
+G2 = 7274.6 - 3665.7
+G2
+```
+
+```{r}
+qchisq(.95,5)
+```
+
+### ROC and AUC
+
+```{r}
+preds<-predict(reg,newdata=test, type="response")
+library(ROCR)
+##produce the numbers associated with classification table
+rates<-ROCR::prediction(preds, test$highQuality)
+##store the true positive and false positive rates
+roc_result<-ROCR::performance(rates,measure="tpr", x.measure="fpr")
+##plot ROC curve and overlay the diagonal line for random guessing
+plot(roc_result, main="(28) ROC Curve for Our Model")
+lines(x = c(0,1), y = c(0,1), col="red")
+
+```
+
+
+```{r}
+auc<-performance(rates, measure = "auc")
+auc@y.values
+```
+
+### Table 1 - Confusion Matrix
+
+```{r}
+table(test$highQuality, preds>0.5)
+```
+
+```{r}
+dat <- data.frame('Error_rate' = NA, 'FPR' = NA, 'FNR' = NA, 'Precision' = NA)
+dat$Error_rate[1] <- (559+204)/nrow(test)
+dat$FPR[1] <- 559/(616+559)
+dat$FNR[1] <- 204/(204+9428)
+dat$Precision[1] <- 9428/(559 + 9428)
+dat$TPR <- 1-dat$FNR
+dat
+```
+
+### Table 2 - Confusion Matrix
+
+```{r}
+table(test$highQuality, preds>0.7)
+```
+
+```{r}
+dat <- data.frame('Error_rate' = NA, 'FPR' = NA, 'FNR' = NA, 'Precision' = NA)
+dat$Error_rate[1] <- (312+551)/nrow(test)
+dat$FPR[1] <- 312/(863+312)
+dat$FNR[1] <- 551/(551+9081)
+dat$Precision[1] <- 9081/(312 + 9081)
+dat$TPR <- 1-dat$FNR
+dat
+```
+
+### Predicting a construction grade for an average house
+
+```{r}
+x1 = median(housing$sqft_living)
+x2 = median(housing$yr_built)
+x3 = median(housing$price)
+x4 = median(housing$sqft_lot15)
+x5 = median(housing$sqft_living15)
+x6 = median(housing$sqft_above)
+x7 = median(housing$bathrooms)
+x8 = "Yes"
+x9 = median(housing$sqft_lot)
+x10 = 0
+```
+
+
+```{r}
+predictionData<-data.frame(sqft_living= x1, yr_built = x2 , price = x3, sqft_lot15 = x4, sqft_living15 = x5, sqft_above = x6, bathrooms = x7, waterfront = x8, sqft_lot = x9, yr_renovated = x10)
+```
+
+
+```{r}
+exp(predict(reg,predictionData))
+```
+
+```{r}
+predict(reg,predictionData, type="response")
+```
